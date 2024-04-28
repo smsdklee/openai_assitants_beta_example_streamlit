@@ -13,6 +13,8 @@ import os
 import requests
 import time
 
+API_KEY = st.secrets["API_KEY"]
+# BASE = st.secrets["BASE"]
 
 def get_alpha_vantage_ohlcv(symbol):
     """
@@ -27,85 +29,86 @@ def get_alpha_vantage_ohlcv(symbol):
     - ohlcv_data: List of dictionaries containing OLHC information.
     """
 
-    base_url = 'https://www.alphavantage.co/query'
-    function = 'TIME_SERIES_INTRADAY'
-    with open("Alpha_vantage_key.txt", 'r') as file:
-          api_key = file.read().strip()
+    # base_url = 'https://www.alphavantage.co/query'
+    # function = 'TIME_SERIES_INTRADAY'
+    # with open("Alpha_vantage_key.txt", 'r') as file:
+    #       api_key = file.read().strip()
     
-    # Construct the API request URL
-    params = {
-        'function': function,
-        'symbol': symbol,
-        'interval': '1min',
-        'apikey': api_key,
-    }
+    # # Construct the API request URL
+    # params = {
+    #     'function': function,
+    #     'symbol': symbol,
+    #     'interval': '1min',
+    #     'apikey': api_key,
+    # }
 
-    try:
-        # Make the API request
-        response = requests.get(base_url, params=params)
-        data = response.json()
+    # try:
+    #     # Make the API request
+    #     response = requests.get(base_url, params=params)
+    #     data = response.json()
 
-        # Check if the request was successful
-        if 'Time Series (1min)' in data:
-            # Extract OLHC data from the response
-            ohlcv_data = [
-                {
-                    'timestamp': timestamp,
-                    'open': float(data['Time Series (1min)'][timestamp]['1. open']),
-                    'high': float(data['Time Series (1min)'][timestamp]['2. high']),
-                    'low': float(data['Time Series (1min)'][timestamp]['3. low']),
-                    'close': float(data['Time Series (1min)'][timestamp]['4. close']),
-                }
-                for timestamp in data['Time Series (1min)']
-            ]
-            o = ""
-            for key, val in ohlcv_data[0].items():
-                 o += str(key) + " " + str(val)
-                 o += "\n"
-            return o
-        else:
-            print(f"Error: {data['Error Message']}")
-            return None
+    #     # Check if the request was successful
+    #     if 'Time Series (1min)' in data:
+    #         # Extract OLHC data from the response
+    #         ohlcv_data = [
+    #             {
+    #                 'timestamp': timestamp,
+    #                 'open': float(data['Time Series (1min)'][timestamp]['1. open']),
+    #                 'high': float(data['Time Series (1min)'][timestamp]['2. high']),
+    #                 'low': float(data['Time Series (1min)'][timestamp]['3. low']),
+    #                 'close': float(data['Time Series (1min)'][timestamp]['4. close']),
+    #             }
+    #             for timestamp in data['Time Series (1min)']
+    #         ]
+    #         o = ""
+    #         for key, val in ohlcv_data[0].items():
+    #              o += str(key) + " " + str(val)
+    #              o += "\n"
+    #         return o
+    #     else:
+    #         print(f"Error: {data['Error Message']}")
+    #         return None
 
-    except requests.RequestException as e:
-        print(f"Error making Alpha Vantage API request: {e}")
-        return None
+    # except requests.RequestException as e:
+    #     print(f"Error making Alpha Vantage API request: {e}")
+    #     return None
 
-tools =[{
-    "type": "function",
-    "function": {
-        "name": "get_alpha_vantage_ohlcv",
-        "description": "Get Open, Low, High, Close (OLHC) information for a given symbol from Alpha Vantage.",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "symbol": {
-                    "type": "string",
-                    "description": "The stock or cryptocurrency symbol (e.g., 'AAPL', 'MSFT', 'BTC', etc.)",
-                },
-            },
-            "required": ["symbol"],
-        },
-    },
-},
+tools =[
+# {
+#     "type": "function",
+#     "function": {
+#         "name": "get_alpha_vantage_ohlcv",
+#         "description": "Get Open, Low, High, Close (OLHC) information for a given symbol from Alpha Vantage.",
+#         "parameters": {
+#             "type": "object",
+#             "properties": {
+#                 "symbol": {
+#                     "type": "string",
+#                     "description": "The stock or cryptocurrency symbol (e.g., 'AAPL', 'MSFT', 'BTC', etc.)",
+#                 },
+#             },
+#             "required": ["symbol"],
+#         },
+#     },
+# },
 {"type": "code_interpreter"},
 {"type": "retrieval"}
 ]
 
-with open("Openai_key2.txt", 'r') as file:
-    secret_key = file.read().strip()
-client = OpenAI(api_key=secret_key)
+# with open("Openai_key2.txt", 'r') as file:
+#     secret_key = file.read().strip()
+client = OpenAI(api_key=API_KEY)
 
-openai.api_key = secret_key
+# openai.api_key = secret_key
 
 
 # Upload files with an "assistants" purpose
 file1 = client.files.create(
-  file=open("Nagarro Annual Report 2022.pdf", "rb"),
+  file=open("Fine Dining in Temecula _ Dining At Europa Village.pdf", "rb"),
   purpose='assistants'
 )
 file2 = client.files.create(
-  file=open("Hariram_Subramanian Gopal_Resume.pdf", "rb"),
+  file=open("Wine Club Temecula _ Europa Village Winery.pdf", "rb"),
   purpose='assistants'
 )
 
@@ -118,40 +121,33 @@ if os.path.exists(assitant_id_path):
     with open(assitant_id_path, 'r') as file:
         assistant_id = file.read().strip()
 else:
-    # If the file doesn't exist, generate a new ID and save it to the file
+        # If the file doesn't exist, generate a new ID and save it to the file
     assistant = client.beta.assistants.create(
-  	instructions=
+    	instructions=
       '''
-
-	You are a highly intelligent assistant specializing in finance and business. Your capabilities include code interpretation and function calling, particularly for retrieving real-time stock prices for companies on an intra-day basis.
-
-	Additionally, you have access to knowledge retrieval from one annual report of Nagarro.
-
-	When engaging in conversations, tailor your responses to meet the chat requirements. Provide insightful answers to user quejupyterries related to finance, business, and stock market activities. Use your access to code interpretation to assist users with programming-related tasks or inquiries.
-
-	Always maintain a professional and informative tone, leveraging your expertise in the financial domain to deliver valuable insights to the users ''',
-  	
-	model="gpt-4-1106-preview",
-  	tools=tools,
+    You are a wine connoisseur recommending wine clubs to customers. You have access to a specific list of memberships from the winery.''',
+    	
+    model="gpt-4-1106-preview",
+    	tools=tools,
     file_ids=[file1.id, file2.id]
-	)
+    )
     assistant_id = assistant.id
     with open(assitant_id_path, 'w') as file:
       file.write(assistant.id)
-      
-thread_id_path = 'thread_id.txt'
-thread_id = ""
+          
+    thread_id_path = 'thread_id.txt'
+    thread_id = ""
 
-# Check if the file exists
-if os.path.exists(thread_id_path):
-    # If the file exists, read the ID from the file
-    with open(thread_id_path, 'r') as file:
-        thread_id = file.read().strip()
-else:
-      thread = client.beta.threads.create()
-      thread_id = thread.id
-      with open(thread_id_path, 'w') as file:
-      	file.write(thread_id)
+    # Check if the file exists
+    if os.path.exists(thread_id_path):
+        # If the file exists, read the ID from the file
+        with open(thread_id_path, 'r') as file:
+            thread_id = file.read().strip()
+    else:
+          thread = client.beta.threads.create()
+          thread_id = thread.id
+          with open(thread_id_path, 'w') as file:
+          	file.write(thread_id)
 
 def submit_message(assistant_id, user_message):
     client.beta.threads.messages.create(
